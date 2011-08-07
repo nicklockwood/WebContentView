@@ -1,0 +1,15 @@
+h1 {
+    color: red;
+    font-size: 2.1em;
+}
+
+.style1 {
+    color: green;
+    font-family: futura;
+}
+
+.style2 {
+    color: purple;
+    font-size: 2em;
+    font-family: times;
+}
