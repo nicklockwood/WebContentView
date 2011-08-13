@@ -1,12 +1,12 @@
 //
 //  WebContentView.h
 //
-//  Version 1.0
+//  Version 1.0.1
 //
 //  Created by Nick Lockwood on 07/05/2011.
 //  Copyright 2011 Charcoal Design. All rights reserved.
 //
-//  Get the latest version of BaseModel from either of these locations:
+//  Get the latest version of WebContentView from either of these locations:
 //
 //  http://charcoaldesign.co.uk/source/cocoa#webcontentview
 //  https://github.com/demosthenese/WebContentView
@@ -49,7 +49,9 @@
 @interface WebContentView : UIView
 
 + (NSString *)defaultStyles;
-+ (void)setDefaultStyles:(NSString *)styles;
+
++ (NSString *)sharedStyles;
++ (void)setSharedStyles:(NSString *)styles;
 + (void)preloadContent:(NSString *)content;
 + (void)preloadContent:(NSString *)content withStyles:(NSString *)styles;
 
@@ -57,11 +59,11 @@
 @property (nonatomic, retain, readonly) UIWebView *webView;
 @property (nonatomic, retain) IBOutlet UIView *header;
 @property (nonatomic, retain) IBOutlet UIView *footer;
+@property (nonatomic, assign) IBOutlet id<WebContentViewDelegate> delegate;
 
 @property (nonatomic, copy) NSString *content;
 @property (nonatomic, copy) NSString *styles;
 @property (nonatomic, assign) BOOL scrollEnabled;
-@property (nonatomic, assign) id<WebContentViewDelegate> delegate;
 @property (nonatomic, readonly, getter = isLoading) BOOL loading;
 
 - (void)flashScrollIndicators;

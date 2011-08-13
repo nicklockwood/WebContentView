@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "WebContentView.h"
 
-@interface WebContentViewExampleViewController : UIViewController
+@interface WebContentViewExampleViewController : UIViewController <WebContentViewDelegate>
 
 @property (nonatomic, retain) IBOutlet WebContentView *webContentView;
 

@@ -1,12 +1,12 @@
 //
 //  WebContentView.m
 //
-//  Version 1.0
+//  Version 1.0.1
 //
 //  Created by Nick Lockwood on 07/05/2011.
 //  Copyright 2011 Charcoal Design. All rights reserved.
 //
-//  Get the latest version of BaseModel from either of these locations:
+//  Get the latest version of WebContentView from either of these locations:
 //
 //  http://charcoaldesign.co.uk/source/cocoa#webcontentview
 //  https://github.com/demosthenese/WebContentView
@@ -37,6 +37,16 @@
 #define MAX_CACHED 10
 
 
+NSString *const WebContentViewDefaultStylesUpdatedNotification = @"WebContentViewDefaultStylesUpdatedNotification";
+static NSString *sharedStyles = nil;
+static NSString *const defaultStyles = @"\
+body {-webkit-text-size-adjust: none; font: 17px Helvetica; color: #000; margin: 0; padding: 5px; }\
+h1 { fonts-size: 19px; }\
+h2 { fonts-size: 18px; }\
+p, h1 { padding: 0; margin: 0 0 10px 0; }\
+a { color: #00f }";
+
+
 @interface WebContentView () <UIWebViewDelegate>
 
 @property (nonatomic, retain) UIScrollView *scrollView;
@@ -57,9 +67,6 @@
 @synthesize delegate;
 
 
-NSString *const WebContentViewDefaultStylesUpdatedNotification = @"WebContentViewDefaultStylesUpdatedNotification";
-static NSString *defaultStyles = nil;
-
 + (void)initialize
 {
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -70,23 +77,20 @@ static NSString *defaultStyles = nil;
 
 + (NSString *)defaultStyles
 {
-    if (defaultStyles == nil)
-    {
-        defaultStyles = [@"body { font: 17px Helvetica; color: #000; margin: 0; padding: 5px }\
-                         h1 { fonts-size: 19px; }\
-                         h2 { fonts-size: 18px; }\
-                         p, h1 { padding: 0; margin: 0 0 10px 0 }\
-                         a { color: #00f }" retain];
-    }
     return defaultStyles;
 }
 
-+ (void)setDefaultStyles:(NSString *)styles
++ (NSString *)sharedStyles
 {
-    if (defaultStyles != styles)
+    return sharedStyles;
+}
+
++ (void)setSharedStyles:(NSString *)styles
+{
+    if (sharedStyles != styles)
     {
-        [defaultStyles release];
-        defaultStyles = [styles retain];
+        [sharedStyles release];
+        sharedStyles = [styles retain];
         
         [[NSNotificationCenter defaultCenter] postNotificationName:WebContentViewDefaultStylesUpdatedNotification object:nil];
     }
@@ -160,6 +164,7 @@ static NSMutableArray *cachedViews = nil;
         [webView release];
         webView = [_webView retain];
         webView.frame = self.bounds;
+        webView.scalesPageToFit = NO;
         webView.backgroundColor = [UIColor clearColor];
         webView.opaque = NO;
         webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -227,8 +232,9 @@ static NSMutableArray *cachedViews = nil;
 
 - (NSString *)allStyles
 {
-    NSArray *lines = [([[[self class] defaultStyles] stringByReplacingOccurrencesOfString:@"'" withString:@"\""] ?: @"")componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-    lines = [lines arrayByAddingObjectsFromArray:[([styles stringByReplacingOccurrencesOfString:@"'" withString:@"\""] ?: @"")componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
+    NSArray *lines = [([defaultStyles stringByReplacingOccurrencesOfString:@"'" withString:@"\""] ?: @"")componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    lines = [lines arrayByAddingObjectsFromArray:[([sharedStyles stringByReplacingOccurrencesOfString:@"'" withString:@"\""] ?: @"") componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
+    lines = [lines arrayByAddingObjectsFromArray:[([styles stringByReplacingOccurrencesOfString:@"'" withString:@"\""] ?: @"") componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
     return [lines componentsJoinedByString:@" "];
 }
 

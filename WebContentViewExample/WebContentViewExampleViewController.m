@@ -43,6 +43,25 @@
     self.webContentView = nil;
 }
 
+- (BOOL)webContentView:(WebContentView *)webContentView shouldOpenURL:(NSURL *)URL
+{
+    if ([[URL scheme] isEqualToString:@"custom"])
+    {
+        //custom scheme
+        [[[[UIAlertView alloc] initWithTitle:@"You clicked a link"
+                                     message:@"We intercepted it"
+                                    delegate:nil
+                           cancelButtonTitle:@"OK"
+                           otherButtonTitles:nil] autorelease] show];
+        return NO;
+    }
+    else
+    {
+        //ordinary link
+        return YES;
+    }
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return YES;

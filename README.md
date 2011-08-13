@@ -60,10 +60,14 @@ The WebContentView class has the following shared methods:
 	+ (NSString *)defaultStyles;
 	
 This returns the shared default stylesheet used by all WebContentView instances.
+
+	+ (NSString *)sharedStyles;
 	
-	+ (void)setDefaultStyles:(NSString *)styles;
+This returns a shared custom stylesheet used by all WebContentView instances.
 	
-This replaces the default stylesheet used by all WebContentView instances. Any existing instances will be refreshed with the new styles if this value is set.
+	+ (void)setSharedStyles:(NSString *)styles;
+	
+This sets the shared stylesheet used by all WebContentView instances. Any existing instances will be refreshed with the new styles if this value is set.
 	
 	+ (void)preloadContent:(NSString *)content;
 	
