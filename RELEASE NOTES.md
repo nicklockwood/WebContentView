@@ -1,3 +1,7 @@
+Version 1.0.2
+
+- Fixed performance issues when scrolling large amounts of content.
+
 Version 1.0.1
 
 - Added -webkit-text-size-adjust: none to default css to prevent arbitrary text resizing on iPhone.

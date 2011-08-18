@@ -1,7 +1,7 @@
 //
 //  WebContentView.m
 //
-//  Version 1.0.1
+//  Version 1.0.2
 //
 //  Created by Nick Lockwood on 07/05/2011.
 //  Copyright 2011 Charcoal Design. All rights reserved.
@@ -51,6 +51,7 @@ a { color: #00f }";
 
 @property (nonatomic, retain) UIScrollView *scrollView;
 @property (nonatomic, retain) UIWebView *webView;
+@property (nonatomic, assign) CGSize frameSize;
 
 @end
 
@@ -65,6 +66,7 @@ a { color: #00f }";
 @synthesize styles;
 @synthesize scrollEnabled;
 @synthesize delegate;
+@synthesize frameSize;
 
 
 + (void)initialize
@@ -176,6 +178,7 @@ static NSMutableArray *cachedViews = nil;
 
 - (void)setup
 {
+	frameSize = CGSizeZero;
     if (CGRectEqualToRect(self.bounds, CGRectZero))
     {
         self.bounds = CGRectMake(0, 0, 1, 1);
@@ -222,7 +225,12 @@ static NSMutableArray *cachedViews = nil;
 
 - (void)layoutSubviews
 {
-    [self sizeContentToFit];
+	[super layoutSubviews];
+	if (!CGSizeEqualToSize(self.frame.size, frameSize))
+	{
+		frameSize = self.frame.size;
+		[self sizeContentToFit];
+	}
 }
 
 - (void)refreshStyles
