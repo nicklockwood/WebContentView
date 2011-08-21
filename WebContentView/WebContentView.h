@@ -9,7 +9,7 @@
 //  Get the latest version of WebContentView from either of these locations:
 //
 //  http://charcoaldesign.co.uk/source/cocoa#webcontentview
-//  https://github.com/demosthenese/WebContentView
+//  https://github.com/nicklockwood/WebContentView
 //
 //  This software is provided 'as-is', without any express or implied
 //  warranty.  In no event will the authors be held liable for any damages
