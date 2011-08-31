@@ -1,7 +1,7 @@
 //
 //  WebContentView.h
 //
-//  Version 1.0.2
+//  Version 1.0.3
 //
 //  Created by Nick Lockwood on 07/05/2011.
 //  Copyright 2011 Charcoal Design. All rights reserved.

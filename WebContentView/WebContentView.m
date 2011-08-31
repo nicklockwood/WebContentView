@@ -1,7 +1,7 @@
 //
 //  WebContentView.m
 //
-//  Version 1.0.2
+//  Version 1.0.3
 //
 //  Created by Nick Lockwood on 07/05/2011.
 //  Copyright 2011 Charcoal Design. All rights reserved.
@@ -40,11 +40,11 @@
 NSString *const WebContentViewDefaultStylesUpdatedNotification = @"WebContentViewDefaultStylesUpdatedNotification";
 static NSString *sharedStyles = nil;
 static NSString *const defaultStyles = @"\
-body {-webkit-text-size-adjust: none; font: 17px Helvetica; color: #000; margin: 0; padding: 5px; }\
+* { -webkit-text-size-adjust: none; -webkit-touch-callout: none; }\
+body { font: 17px Helvetica; margin: 0; padding: 5px; }\
 h1 { fonts-size: 19px; }\
 h2 { fonts-size: 18px; }\
-p, h1 { padding: 0; margin: 0 0 10px 0; }\
-a { color: #00f }";
+p, h1 { padding: 0; margin: 0 0 10px 0; }";
 
 
 @interface WebContentView () <UIWebViewDelegate>
@@ -309,7 +309,7 @@ static NSMutableArray *cachedViews = nil;
             html = [html stringByReplacingOccurrencesOfString:@"</head>" withString:style];
             html = [html stringByReplacingOccurrencesOfString:@"</HEAD>" withString:style];
         }
-        [webView loadHTMLString:html baseURL:[[NSBundle mainBundle] resourceURL]];
+        [webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] resourcePath]]];
     }
 }
 
