@@ -1,7 +1,7 @@
 //
 //  WebContentView.m
 //
-//  Version 1.0.3
+//  Version 1.0.4
 //
 //  Created by Nick Lockwood on 07/05/2011.
 //  Copyright 2011 Charcoal Design. All rights reserved.
@@ -253,28 +253,28 @@ static NSMutableArray *cachedViews = nil;
         [styles release];
         styles = [_styles retain];
     }
-    
-    if (webView.loading)
-    {
-        //abort and reload
-        [webView stopLoading];
-        self.content = content;
-    }
-    else
-    {
-        //update styles using javascript
-        NSString *script = [NSString stringWithFormat:
-                            @"var head = document.getElementsByTagName('head')[0];\
-                            var style = document.getElementById('%@');\
-                            if (style) { head.removeChild(style); }\
-                            style = document.createElement('style');\
-                            style.id = '%@';\
-                            var text = document.createTextNode('%@');\
-                            style.appendChild(text);\
-                            head.appendChild(style);", STYLE_TAG, STYLE_TAG, [self allStyles]];
-        [webView stringByEvaluatingJavaScriptFromString:script];
-        [self performSelector:@selector(sizeContentToFit) withObject:nil afterDelay:0.1];
-    }
+	
+	if (webView.loading)
+	{
+		//abort and reload
+		[webView stopLoading];
+		self.content = content;
+	}
+	else
+	{
+		//update styles using javascript
+		NSString *script = [NSString stringWithFormat:
+							@"var head = document.getElementsByTagName('head')[0];\
+							var style = document.getElementById('%@');\
+							if (style) { head.removeChild(style); }\
+							style = document.createElement('style');\
+							style.id = '%@';\
+							var text = document.createTextNode('%@');\
+							style.appendChild(text);\
+							head.appendChild(style);", STYLE_TAG, STYLE_TAG, [self allStyles]];
+		[webView stringByEvaluatingJavaScriptFromString:script];
+		[self performSelector:@selector(sizeContentToFit) withObject:nil afterDelay:0.1];
+	}
 }
 
 - (void)setContent:(NSString *)_content
@@ -286,7 +286,7 @@ static NSMutableArray *cachedViews = nil;
     }
     
     WebContentView *view = [[self class] cachedViewForContent:content];
-    if (view)
+    if (view && !view.webView.loading)
     {
         [self setWebView:view.webView];
         self.styles = styles;

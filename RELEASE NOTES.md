@@ -1,3 +1,7 @@
+Version 1.0.4
+
+- Fixed race condition where setting web content could cause infinite loop.
+
 Version 1.0.3
 
 - Removed 4.0-specific API reference so that WebContentView can be used on iOS 3.x
