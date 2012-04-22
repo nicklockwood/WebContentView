@@ -1,7 +1,7 @@
 //
 //  WebContentView.m
 //
-//  Version 1.0.4
+//  Version 1.1
 //
 //  Created by Nick Lockwood on 07/05/2011.
 //  Copyright 2011 Charcoal Design. All rights reserved.
@@ -33,7 +33,6 @@
 #import "WebContentView.h"
 
 
-#define STYLE_TAG @"WCVStyles"
 #define MAX_CACHED 10
 
 
@@ -60,17 +59,30 @@ p, h1 { padding: 0; margin: 0 0 10px 0; }";
 
 @synthesize scrollView;
 @synthesize webView;
-@synthesize header;
-@synthesize footer;
+@synthesize headerView;
+@synthesize footerView;
 @synthesize content;
-@synthesize styles;
 @synthesize scrollEnabled;
 @synthesize delegate;
 @synthesize frameSize;
+@synthesize minimumContentHeight;
 
+
++ (void)load
+{
+	//ensure the we get initialized on app launch
+	[[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(initialize)
+                                                 name:UIApplicationDidFinishLaunchingNotification
+                                               object:nil];
+}
 
 + (void)initialize
 {
+	//'warm up' webkit
+	[[[UIWebView alloc] init] autorelease];
+	
+	//register for cache clearing
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(clearCache)
                                                  name:UIApplicationDidReceiveMemoryWarningNotification
@@ -118,11 +130,6 @@ static NSMutableArray *cachedViews = nil;
 
 + (void)preloadContent:(NSString *)content
 {
-    [self preloadContent:content withStyles:nil];
-}
-
-+ (void)preloadContent:(NSString *)content withStyles:(NSString *)styles
-{
     if (![self cachedViewForContent:content])
     {
         if ([cachedViews count] == MAX_CACHED)
@@ -130,7 +137,6 @@ static NSMutableArray *cachedViews = nil;
             [cachedViews removeObjectAtIndex:0];
         }
         WebContentView *view = [[WebContentView alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
-        view.styles = styles;
         view.content = content;
         [cachedViews addObject:view];
         [view release];
@@ -186,6 +192,7 @@ static NSMutableArray *cachedViews = nil;
     
     //defaults
     scrollEnabled = YES;
+	minimumContentHeight = 0.0f;
     
     scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -230,51 +237,20 @@ static NSMutableArray *cachedViews = nil;
 	{
 		frameSize = self.frame.size;
 		[self sizeContentToFit];
+		[self performSelector:@selector(sizeContentToFit) withObject:nil afterDelay:0.0f];
 	}
 }
 
 - (void)refreshStyles
 {
-    self.styles = styles;
+    self.content = content;
 }
 
 - (NSString *)allStyles
 {
     NSArray *lines = [([defaultStyles stringByReplacingOccurrencesOfString:@"'" withString:@"\""] ?: @"")componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
     lines = [lines arrayByAddingObjectsFromArray:[([sharedStyles stringByReplacingOccurrencesOfString:@"'" withString:@"\""] ?: @"") componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
-    lines = [lines arrayByAddingObjectsFromArray:[([styles stringByReplacingOccurrencesOfString:@"'" withString:@"\""] ?: @"") componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
     return [lines componentsJoinedByString:@" "];
-}
-
-- (void)setStyles:(NSString *)_styles
-{
-    if (styles != _styles)
-    {
-        [styles release];
-        styles = [_styles retain];
-    }
-	
-	if (webView.loading)
-	{
-		//abort and reload
-		[webView stopLoading];
-		self.content = content;
-	}
-	else
-	{
-		//update styles using javascript
-		NSString *script = [NSString stringWithFormat:
-							@"var head = document.getElementsByTagName('head')[0];\
-							var style = document.getElementById('%@');\
-							if (style) { head.removeChild(style); }\
-							style = document.createElement('style');\
-							style.id = '%@';\
-							var text = document.createTextNode('%@');\
-							style.appendChild(text);\
-							head.appendChild(style);", STYLE_TAG, STYLE_TAG, [self allStyles]];
-		[webView stringByEvaluatingJavaScriptFromString:script];
-		[self performSelector:@selector(sizeContentToFit) withObject:nil afterDelay:0.1];
-	}
 }
 
 - (void)setContent:(NSString *)_content
@@ -286,17 +262,14 @@ static NSMutableArray *cachedViews = nil;
     }
     
     WebContentView *view = [[self class] cachedViewForContent:content];
-    if (view && !view.webView.loading)
+    if (view)
     {
         [self setWebView:view.webView];
-        self.styles = styles;
     }
     else
     {
         NSString *html = content ?: @"";
-        NSString *style = [NSString stringWithFormat:
-                           @"<style id='%@' type='text/css'>%@</style>",
-                           STYLE_TAG, [self allStyles]];
+        NSString *style = [NSString stringWithFormat:@"<style type='text/css'>%@</style>", [self allStyles]];
         if ([html rangeOfString:@"</html>"].location == NSNotFound &&
             [html rangeOfString:@"</HTML>"].location == NSNotFound)
         {
@@ -325,59 +298,74 @@ static NSMutableArray *cachedViews = nil;
 - (void)sizeContentToFit
 {
 	CGFloat headerHeight = 0;
-	if (header)
+	if (headerView)
 	{
-		headerHeight = header.frame.size.height;
-		header.frame = CGRectMake(0, 0, self.bounds.size.width, headerHeight);
+		headerHeight = headerView.frame.size.height;
+		headerView.frame = CGRectMake(0, 0, self.bounds.size.width, headerHeight);
 	}
 	CGFloat footerHeight = 0;
-	if (footer)
+	if (footerView)
 	{
-		footerHeight = footer.frame.size.height;
+		footerHeight = footerView.frame.size.height;
 	}
-    webView.frame = CGRectMake(0, headerHeight, self.bounds.size.width,
-                               self.bounds.size.height - headerHeight - footerHeight);
-    [webView sizeToFit];
-	if (footer)
+	
+	CGFloat height = minimumContentHeight - headerHeight - footerHeight;
+	webView.frame = CGRectMake(0, headerHeight, self.bounds.size.width, fmaxf(10.0f, height));
+	[webView sizeToFit];
+	
+	if (footerView)
 	{
-		footer.frame = CGRectMake(0, webView.frame.origin.y + webView.frame.size.height, self.bounds.size.width, footerHeight);
+		footerView.frame = CGRectMake(0, webView.frame.origin.y + webView.frame.size.height, self.bounds.size.width, footerHeight);
 	}
-    scrollView.contentSize = CGSizeMake(self.bounds.size.width, webView.frame.size.height + headerHeight + footerHeight);
+	scrollView.contentSize = CGSizeMake(self.bounds.size.width, webView.frame.size.height + headerHeight + footerHeight);
 }
 
-- (void)flashScrollIndicators
+- (void)flashScrollIndicatorsIfApplicable
 {
-    if (scrollView.contentSize.height > scrollView.bounds.size.height)
+	if (self.loading)
+	{
+		//try again in a bit
+		[self performSelector:@selector(flashScrollIndicatorsIfApplicable)
+				   withObject:nil afterDelay:0.1f];
+	}
+	else if (scrollView.contentSize.height > scrollView.bounds.size.height)
     {
         [scrollView flashScrollIndicators];
     }
 }
 
-- (void)setHeader:(UIView *)_header
+- (void)flashScrollIndicators
 {
-    if (header != _header)
+	//delay in case view is still refreshing
+    [self performSelector:@selector(flashScrollIndicatorsIfApplicable)
+			   withObject:nil afterDelay:0.1f];
+}
+
+- (void)setHeaderView:(UIView *)_headerView
+{
+    if (headerView != _headerView)
     {
-        [header removeFromSuperview];
-        [header release];
-        header = [_header retain];
-		if (header)
+        [headerView removeFromSuperview];
+        [headerView release];
+        headerView = [_headerView retain];
+		if (headerView)
 		{
-			[scrollView addSubview:header];
+			[scrollView addSubview:headerView];
 		}
     }
     [self sizeContentToFit];
 }
 
-- (void)setFooter:(UIView *)_footer
+- (void)setFooterView:(UIView *)_footerView
 {
-    if (footer != _footer)
+    if (footerView != _footerView)
     {
-        [footer removeFromSuperview];
-        [footer release];
-        footer = [_footer retain];
-		if (footer)
+        [footerView removeFromSuperview];
+        [footerView release];
+        footerView = [_footerView retain];
+		if (footerView)
 		{
-			[scrollView addSubview:footer];
+			[scrollView addSubview:footerView];
 		}
     }
     [self sizeContentToFit];
@@ -388,8 +376,8 @@ static NSMutableArray *cachedViews = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [scrollView release];
     [webView release];
-    [header release];
-    [footer release];
+    [headerView release];
+    [footerView release];
     [super dealloc];
 }
 
@@ -416,8 +404,9 @@ static NSMutableArray *cachedViews = nil;
 
 - (void)webViewDidFinishLoad:(UIWebView *)_webView
 {
-    [self performSelector:@selector(sizeContentToFit) withObject:nil afterDelay:0.1];
-    
+	[self sizeContentToFit];
+	[self performSelector:@selector(sizeContentToFit) withObject:nil afterDelay:0.0f];
+	
     if ([delegate respondsToSelector:@selector(webContentViewDidFinishLoad:)])
     {
         [(NSObject *)delegate performSelector:@selector(webContentViewDidFinishLoad:) withObject:self afterDelay:0.2];

@@ -1,5 +1,5 @@
 WebContentView
-version 1.0.4, September 9th, 2011
+version 1.1, September 10th, 2011
 
 Copyright (C) 2011 Charcoal Design
 

@@ -1,7 +1,7 @@
 //
 //  WebContentView.h
 //
-//  Version 1.0.4
+//  Version 1.1
 //
 //  Created by Nick Lockwood on 07/05/2011.
 //  Copyright 2011 Charcoal Design. All rights reserved.
@@ -53,17 +53,16 @@
 + (NSString *)sharedStyles;
 + (void)setSharedStyles:(NSString *)styles;
 + (void)preloadContent:(NSString *)content;
-+ (void)preloadContent:(NSString *)content withStyles:(NSString *)styles;
 
 @property (nonatomic, retain, readonly) UIScrollView *scrollView;
 @property (nonatomic, retain, readonly) UIWebView *webView;
-@property (nonatomic, retain) IBOutlet UIView *header;
-@property (nonatomic, retain) IBOutlet UIView *footer;
+@property (nonatomic, retain) IBOutlet UIView *headerView;
+@property (nonatomic, retain) IBOutlet UIView *footerView;
 @property (nonatomic, assign) IBOutlet id<WebContentViewDelegate> delegate;
 
 @property (nonatomic, copy) NSString *content;
-@property (nonatomic, copy) NSString *styles;
 @property (nonatomic, assign) BOOL scrollEnabled;
+@property (nonatomic, assign) CGFloat minimumContentHeight;
 @property (nonatomic, readonly, getter = isLoading) BOOL loading;
 
 - (void)flashScrollIndicators;

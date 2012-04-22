@@ -1,3 +1,10 @@
+Version 1.1
+
+- Less is more! Removed the styles property of the WebContentView to encourage use of the setSharedStyles method instead, which is more performant and less glitchy.
+- Added new minimumContentHeight property to control the placement of the footer view (default placement is now different from earlier versions - check the documentation.)
+- Renamed header and footer to headerView and footerView.
+- Improved performance when first displaying a view by preloading WebKit.
+
 Version 1.0.4
 
 - Fixed race condition where setting web content could cause infinite loop.
